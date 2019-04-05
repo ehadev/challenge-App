@@ -12,12 +12,14 @@ using Challenge_App.Repo.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using Challenge_App.Repo.DTO.Challenge;
+using Challenge_App.Repo.Helper;
+using Challenge_App.Helper;
 
 namespace Challenge_App.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     public class ChallengesController : ControllerBase
     {
         private readonly IChallengeRepository _challengeRepository;
@@ -28,13 +30,13 @@ namespace Challenge_App.Controllers
         }
 
         // GET: api/Challenges
-        [HttpGet]
-        public async Task<IActionResult> GetChallenges()
-        {
-            var challenges = await _challengeRepository.GetAll();
+        //[HttpGet]
+        //public async Task<IActionResult> GetChallenges()
+        //{
+        //    var challenges = await _challengeRepository.GetAll();
 
-            return Ok(challenges);
-        }
+        //    return Ok(challenges);
+        //}
 
         [HttpGet("{userId}")]
         public async Task<IActionResult> GetChallenges(int userId)
@@ -53,6 +55,35 @@ namespace Challenge_App.Controllers
             });
             return Ok(challengesToReturn);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetChallenges([FromQuery]ChallengeParameters challengeParameters)
+        {
+
+            int userId = -1;
+            int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier).Value, out userId);
+
+            if (userId == -1)
+                return Unauthorized();
+
+            var challenges = await _challengeRepository.GetChallengesAsync(challengeParameters, userId);
+            IEnumerable<ChallengeForListDTO> challengesToReturn = challenges.Select(x => new ChallengeForListDTO
+            {
+
+                Id = x.Id,
+                Name = x.Name,
+                CreatedAt = x.CreatedAt,
+                challengeItemCount = _challengeRepository.GetChallengeItemsCount(x.Id)
+
+            });
+
+            Response.AddPagination(challenges.CurrentPage, challenges.PageSize, challenges.TotalCount, challenges.TotalPages);
+
+
+            return Ok(challengesToReturn);
+        }
+
+
 
         [HttpGet("items/{id}")]
         public async Task<IActionResult> GetChallengeItems(int id)

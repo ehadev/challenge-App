@@ -1,4 +1,5 @@
 ﻿using Challenge_App.Data;
+using Challenge_App.Repo.Helper;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,6 +9,7 @@ namespace Challenge_App.Repo.Interfaces
 {
     public interface IChallengeRepository : IRepository<Challenge>
     {
+        Task<PagedList<Challenge>> GetChallengesAsync(ChallengeParameters challengeParameters, int userId);
         Task<IEnumerable<ChallengeItem>> GetChallengeItems(int challengeId);
         int GetChallengeItemsCount(int challengeId);
 

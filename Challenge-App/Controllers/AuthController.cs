@@ -89,10 +89,15 @@ namespace Challenge_App.Controllers
             var tokenHandler = new JwtSecurityTokenHandler();
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
+            User userForStorage = new User()
+            {
+                Username = userForLogin.Username
+            };
 
             return Ok(new
             {
-                token = tokenHandler.WriteToken(token)
+                token = tokenHandler.WriteToken(token),
+                userForStorage
             });
 
         }

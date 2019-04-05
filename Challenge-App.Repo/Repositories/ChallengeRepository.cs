@@ -1,4 +1,5 @@
 ﻿using Challenge_App.Data;
+using Challenge_App.Repo.Helper;
 using Challenge_App.Repo.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -13,6 +14,12 @@ namespace Challenge_App.Repo.Repositories
     {
         public ChallengeRepository(MyContext context) : base(context)
         {
+        } 
+        public async Task<PagedList<Challenge>> GetChallengesAsync(ChallengeParameters challengeParameters, int userId)
+        {
+            var challenges = _context.Challenge.Include(x=>x.ChallengeUsers).Where(x=>x.ChallengeUsers.Any(s =>s.UserId == userId));
+
+            return await PagedList<Challenge>.CreateAsync(challenges, challengeParameters.PageNumber, challengeParameters.PageSize);
         }
         public async Task<IEnumerable<Challenge>> GetChallengesOfUser(int userId)
         {
@@ -46,5 +53,7 @@ namespace Challenge_App.Repo.Repositories
         {
             _context.Set<ChallengeUsers>().Add(entity);
         }
+
+     
     }
 }
